@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 from layers import *
+from layers.functions.detection import detect
 from data import voc, coco
 import os
 
@@ -96,12 +97,16 @@ class SSD(nn.Module):
         loc = torch.cat([o.view(o.size(0), -1) for o in loc], 1)
         conf = torch.cat([o.view(o.size(0), -1) for o in conf], 1)
         if self.phase == "test":
-            output = self.detect(
-                loc.view(loc.size(0), -1, 4),                   # loc preds
-                self.softmax(conf.view(conf.size(0), -1,
-                             self.num_classes)),                # conf preds
-                self.priors.type(type(x.data))                  # default boxes
-            )
+            # output = self.detect(
+            #     loc.view(loc.size(0), -1, 4),                   # loc preds
+            #     self.softmax(conf.view(conf.size(0), -1,
+            #                  self.num_classes)),                # conf preds
+            #     self.priors.type(type(x.data))                  # default boxes
+            # )
+            output = detect(num_classes=201, bkg_label=0, top_k=200, conf_thresh=0.01, nms_thresh=0.45,
+                loc_data=loc.view(loc.size(0), -1, 4),                   # loc preds
+                conf_data=self.softmax(conf.view(conf.size(0), -1, self.num_classes)),                # conf preds
+                prior_data=self.priors.type(type(x.data)))                # default boxes)
         else:
             output = (
                 loc.view(loc.size(0), -1, 4),

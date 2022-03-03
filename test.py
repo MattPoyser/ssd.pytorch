@@ -7,11 +7,12 @@ import torch.nn as nn
 import torch.backends.cudnn as cudnn
 import torchvision.transforms as transforms
 from torch.autograd import Variable
-from data import VOC_ROOT, VOC_CLASSES as labelmap
+# from data import VOC_ROOT, VOC_CLASSES as labelmap
 from PIL import Image
-from data import VOCAnnotationTransform, VOCDetection, BaseTransform, VOC_CLASSES
+# from data import VOCAnnotationTransform, VOCDetection, BaseTransform, VOC_CLASSES
 import torch.utils.data as data
 from ssd import build_ssd
+from PIL import Image, ImageDraw, ImageFont, ImageColor
 
 parser = argparse.ArgumentParser(description='Single Shot MultiBox Detection')
 parser.add_argument('--trained_model', default='weights/ssd_300_VOC0712.pth',
@@ -22,7 +23,7 @@ parser.add_argument('--visual_threshold', default=0.6, type=float,
                     help='Final confidence threshold')
 parser.add_argument('--cuda', default=True, type=bool,
                     help='Use cuda to train model')
-parser.add_argument('--voc_root', default=VOC_ROOT, help='Location of VOC root directory')
+# parser.add_argument('--voc_root', default=VOC_ROOT, help='Location of VOC root directory')
 parser.add_argument('-f', default=None, type=str, help="Dummy arg so we can load in Jupyter Notebooks")
 args = parser.parse_args()
 
@@ -93,5 +94,37 @@ def test_voc():
              BaseTransform(net.size, (104, 117, 123)),
              thresh=args.visual_threshold)
 
+
+def test_single(trained_model, img):
+    net = build_ssd('test', 300, 201) # initialize SSD
+    net.load_state_dict(torch.load(trained_model))
+    net.eval()
+    print('Finished loading model!')
+
+    img = Image.open(img)
+    x = transforms.Resize((300,300))(img)
+    x = transforms.ToTensor()(x).cuda()
+    x = Variable(x.unsqueeze(0))
+
+    y = net(x)  # forward pass
+    detections = y.data
+    # scale each detection back up to the image
+    scale = torch.Tensor([x.shape[1], x.shape[0],
+                          x.shape[1], x.shape[0]])
+
+    image_to_draw = transforms.ToPILImage()(x.squeeze().detach().cpu())
+    draw = ImageDraw.Draw(image_to_draw)
+    color = (255, 0, 0, 100)
+    for i in range(detections.size(1)):
+        j = 0
+        while detections[0, i, j, 0] >= 0.6:
+            score = detections[0, i, j, 0]
+            pt = (detections[0, i, j, 1:] * scale).cpu().numpy()
+            coords = (pt[0], pt[1], pt[2], pt[3])
+            draw.rectangle(coords, width=1, outline=color)
+            draw.text((coords[2] + 2, coords[3] + 2), score, fill=(255,255,255), font=ImageFont.load_default())
+    image_to_draw.save("/home/matt/Downloads/hedgehog_p.png")
+
 if __name__ == '__main__':
-    test_voc()
+    # test_voc()
+    test_single("weights/COCO.pth", "/home/matt/Downloads/hedgehog.jpeg")
