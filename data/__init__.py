@@ -10,7 +10,16 @@ import numpy as np
 def collate_fn(batch):
     data, labels = zip(*batch)
     stacked_data = torch.stack(data, dim=0)
-    return stacked_data, labels
+
+    # deal with labels s.t. instead of list of dicts we have list of tensors of size n x 5
+    # where n is no. objects in that image
+
+    # at same time remove from batch anything with zero objects
+    zipped = [(q, torch.cat((label['boxes'], label['labels'].unsqueeze(1)), 1)) for q, label in enumerate(labels) if len(label['boxes']) > 0]
+
+    indices, stacked_labels = zip(*zipped)
+    stacked_data = stacked_data[list(indices)]
+    return stacked_data, stacked_labels
 
 
 def detection_collate(batch):
