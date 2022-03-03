@@ -6,6 +6,13 @@ import torch
 import cv2
 import numpy as np
 
+
+def collate_fn(batch):
+    data, labels = zip(*batch)
+    stacked_data = torch.stack(data, dim=0)
+    return stacked_data, labels
+
+
 def detection_collate(batch):
     """Custom collate fn for dealing with batches of images that have a different
     number of associated object annotations (bounding boxes).
