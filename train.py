@@ -15,6 +15,7 @@ import torch.utils.data as data
 import numpy as np
 import argparse
 
+sys.path.insert(0, "/hdd/PhD/hem/perceptual")
 sys.path.insert(0, "/home/matt/Documents/hem/perceptual")
 from coco_obj import COCODetLoader as Coco_Det
 import torchvision.transforms as tf
@@ -97,8 +98,8 @@ def train():
             # transforms.RandomAffine(degrees=15, translate=(0.1, 0.1), scale=(0.9, 1.1), shear=0.1)
         ]
         train_transforms = tf.Compose(transf + normalize)
-        # train_path = "/hdd/PhD/data/coco"
-        train_path = '/home/matt/Documents/coco/'
+        train_path = "/hdd/PhD/data/coco"
+        # train_path = '/home/matt/Documents/coco/'
         dataset = Coco_Det(train_path=train_path, transforms=train_transforms, max_size=1000)
     elif args.dataset == 'VOC':
         if args.dataset_root == COCO_ROOT:
