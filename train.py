@@ -18,6 +18,7 @@ import argparse
 sys.path.insert(0, "/hdd/PhD/hem/perceptual")
 sys.path.insert(0, "/home/matt/Documents/hem/perceptual")
 from coco_obj import COCODetLoader as Coco_Det
+from voc import VOCLoader
 import torchvision.transforms as tf
 
 def str2bool(v):
@@ -102,13 +103,30 @@ def train():
         # train_path = '/home/matt/Documents/coco/'
         dataset = Coco_Det(train_path=train_path, transforms=train_transforms, max_size=1000)
     elif args.dataset == 'VOC':
-        if args.dataset_root == COCO_ROOT:
-            parser.error('Must specify dataset if specifying dataset_root')
+        # if args.dataset_root == COCO_ROOT:
+        #     parser.error('Must specify dataset if specifying dataset_root')
+        # cfg = voc
+        # dataset = VOCDetection(root=args.dataset_root,
+        #                        transform=SSDAugmentation(cfg['min_dim'],
+        #                                                  MEANS))
         cfg = voc
-        dataset = VOCDetection(root=args.dataset_root,
-                               transform=SSDAugmentation(cfg['min_dim'],
-                                                         MEANS))
+        isize = 300
+        assert isize == 300, "fixed input size, and only size 300 is supported"
+        MEAN = [0.485, 0.456, 0.406]
+        STD = [0.229, 0.224, 0.225]
+        normalize = [
+            tf.ToTensor(),
+            tf.Normalize(MEAN, STD)
+        ]
+        transf = [
+            tf.Resize((isize, isize)),
+            # transforms.RandomAffine(degrees=15, translate=(0.1, 0.1), scale=(0.9, 1.1), shear=0.1)
+        ]
+        train_transforms = tf.Compose(transf + normalize)
 
+        train_path = "/hdd/PhD/data/VOCdevkit"
+        # train_path = '/data/VOCdevkit/'
+        dataset = VOCLoader(root=train_path, transforms=train_transforms)
     if args.visdom:
         import visdom
         viz = visdom.Visdom()
