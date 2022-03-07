@@ -215,7 +215,8 @@ def train():
             # else:
             #     images = Variable(images)
             #     targets = [Variable(ann, volatile=True) for ann in targets]
-            images = images.cuda()
+            if args.cuda:
+                images = images.cuda()
 
             # forward
             t0 = time.time()
