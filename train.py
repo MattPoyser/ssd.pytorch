@@ -99,8 +99,8 @@ def train():
             # transforms.RandomAffine(degrees=15, translate=(0.1, 0.1), scale=(0.9, 1.1), shear=0.1)
         ]
         train_transforms = tf.Compose(transf + normalize)
-        train_path = "/hdd/PhD/data/coco"
-        # train_path = '/home/matt/Documents/coco/'
+        # train_path = "/hdd/PhD/data/coco"
+        train_path = '/home/matt/Documents/coco/'
         dataset = Coco_Det(train_path=train_path, transforms=train_transforms, max_size=1000)
     elif args.dataset == 'VOC':
         # if args.dataset_root == COCO_ROOT:
@@ -124,8 +124,8 @@ def train():
         ]
         train_transforms = tf.Compose(transf + normalize)
 
-        train_path = "/hdd/PhD/data/VOCdevkit"
-        # train_path = '/data/VOCdevkit/'
+        # train_path = "/hdd/PhD/data/VOCdevkit"
+        train_path = '/data/VOCdevkit/'
         dataset = VOCLoader(root=train_path, transforms=train_transforms)
     if args.visdom:
         import visdom
@@ -215,7 +215,8 @@ def train():
             # else:
             #     images = Variable(images)
             #     targets = [Variable(ann, volatile=True) for ann in targets]
-            images = images.cuda()
+            if args.cuda:
+                images = images.cuda()
 
             # forward
             t0 = time.time()
