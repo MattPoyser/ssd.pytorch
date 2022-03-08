@@ -103,7 +103,7 @@ class SSD(nn.Module):
             #                  self.num_classes)),                # conf preds
             #     self.priors.type(type(x.data))                  # default boxes
             # )
-            output = detect(num_classes=201, bkg_label=0, top_k=200, conf_thresh=0.01, nms_thresh=0.45,
+            output = detect(num_classes=self.num_classes, bkg_label=0, top_k=200, conf_thresh=0.01, nms_thresh=0.45,
                 loc_data=loc.view(loc.size(0), -1, 4),                   # loc preds
                 conf_data=self.softmax(conf.view(conf.size(0), -1, self.num_classes)),                # conf preds
                 prior_data=self.priors.type(type(x.data)))                # default boxes)
