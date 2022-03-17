@@ -433,6 +433,7 @@ if __name__ == '__main__':
         net = net.cuda()
         cudnn.benchmark = True
     # evaluation
-    test_net(args.save_folder, net, args.cuda, dataset,
-             BaseTransform(net.size, dataset_mean), args.top_k, 300,
-             thresh=args.confidence_threshold)
+    with torch.no_grad():
+        test_net(args.save_folder, net, args.cuda, dataset,
+                 BaseTransform(net.size, dataset_mean), args.top_k, 300,
+                 thresh=args.confidence_threshold)
